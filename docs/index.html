@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Legacy at Windsor — Price Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0d0f14;
+      --surface:   #151820;
+      --surface2:  #1c2030;
+      --border:    rgba(255,255,255,0.07);
+      --text:      #f0f2f7;
+      --muted:     #6b7280;
+      --accent1:   #6c8fff;
+      --accent2:   #ff6b9d;
+      --accent3:   #43e8b0;
+      --accent4:   #ffb547;
+      --accent5:   #bf7fff;
+      --font-head: 'Syne', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'DM Mono', monospace;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 14px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      padding: 2rem 2.5rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    header h1 {
+      font-family: var(--font-head);
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    header h1 span { color: var(--accent1); }
+    #last-updated {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* ── Nav ── */
+    nav {
+      display: flex;
+      gap: 0;
+      padding: 0 2.5rem;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+    }
+    nav button {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-family: var(--font-head);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 0.9rem 1.25rem;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: color 0.15s, border-color 0.15s;
+      white-space: nowrap;
+    }
+    nav button.active { color: var(--text); border-bottom-color: var(--accent1); }
+    nav button:hover:not(.active) { color: var(--text); }
+
+    /* ── Main ── */
+    main { padding: 2rem 2.5rem; max-width: 1300px; }
+
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ── Stat cards ── */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin-bottom: 2rem;
+    }
+    .stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+    }
+    .stat-label {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+    .stat-value {
+      font-family: var(--font-head);
+      font-size: 1.6rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .stat-sub {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* ── Section headers ── */
+    .section-title {
+      font-family: var(--font-head);
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--text);
+    }
+
+    /* ── Chart card ── */
+    .chart-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .chart-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .chart-title {
+      font-family: var(--font-head);
+      font-size: 15px;
+      font-weight: 600;
+    }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    /* ── Filter bar ── */
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+      align-items: center;
+    }
+    .filter-bar label {
+      font-size: 12px;
+      color: var(--muted);
+      font-family: var(--font-mono);
+    }
+    .filter-bar select, .filter-bar input {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 12px;
+      padding: 6px 10px;
+      font-family: var(--font-body);
+    }
+    .filter-bar select:focus, .filter-bar input:focus {
+      outline: none;
+      border-color: var(--accent1);
+    }
+
+    /* ── Unit cards grid ── */
+    .units-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 12px;
+    }
+    .unit-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.1rem;
+      transition: border-color 0.15s;
+    }
+    .unit-card:hover { border-color: rgba(108,143,255,0.4); }
+    .unit-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+    .unit-number {
+      font-family: var(--font-mono);
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--accent1);
+    }
+    .unit-price {
+      font-family: var(--font-head);
+      font-size: 17px;
+      font-weight: 700;
+    }
+    .unit-plan {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+    .unit-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    .chip {
+      font-size: 10px;
+      font-family: var(--font-mono);
+      padding: 2px 7px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .chip.highlight { border-color: rgba(67,232,176,0.4); color: var(--accent3); }
+    .chip.warn { border-color: rgba(255,181,71,0.4); color: var(--accent4); }
+
+    /* ── Table ── */
+    .table-wrap { overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      padding: 8px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    td {
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+    tr:hover td { background: var(--surface2); }
+    .td-mono { font-family: var(--font-mono); }
+    .td-muted { color: var(--muted); }
+    .badge {
+      font-size: 10px;
+      font-family: var(--font-mono);
+      padding: 2px 7px;
+      border-radius: 20px;
+    }
+    .badge-yes { background: rgba(67,232,176,0.12); color: var(--accent3); }
+    .badge-no  { background: rgba(255,255,255,0.05); color: var(--muted); }
+
+    /* ── Deal finder ── */
+    .deal-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 10px;
+    }
+    .deal-unit { font-family: var(--font-mono); font-size: 15px; color: var(--accent1); min-width: 52px; }
+    .deal-info { flex: 1; }
+    .deal-plan { font-size: 11px; color: var(--muted); }
+    .deal-price { font-family: var(--font-head); font-size: 17px; font-weight: 700; }
+    .deal-savings {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--accent3);
+      background: rgba(67,232,176,0.1);
+      border: 1px solid rgba(67,232,176,0.2);
+      border-radius: 8px;
+      padding: 4px 10px;
+      white-space: nowrap;
+    }
+
+    /* ── Loading / empty ── */
+    .loading {
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      padding: 3rem 0;
+      text-align: center;
+    }
+
+    @media (max-width: 600px) {
+      header, nav, main { padding-left: 1.25rem; padding-right: 1.25rem; }
+      .stat-value { font-size: 1.3rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Legacy at <span>Windsor</span></h1>
+    <div id="last-updated">loading data...</div>
+  </div>
+</header>
+
+<nav>
+  <button class="active" onclick="showPage('trends', this)">Price Trends</button>
+  <button onclick="showPage('available', this)">Available Now</button>
+  <button onclick="showPage('details', this)">All Units</button>
+  <button onclick="showPage('deals', this)">Deal Finder</button>
+</nav>
+
+<main>
+
+  <!-- ── PRICE TRENDS ── -->
+  <div class="page active" id="page-trends">
+    <div class="stats" id="stats-row"></div>
+    <div class="filter-bar">
+      <label>Floor plan</label>
+      <select id="plan-filter" onchange="renderTrends()">
+        <option value="all">All plans</option>
+      </select>
+      <label>Bedrooms</label>
+      <select id="bed-filter" onchange="renderTrends()">
+        <option value="all">Any</option>
+        <option value="1">1 bed</option>
+        <option value="2">2 bed</option>
+        <option value="3">3 bed</option>
+      </select>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="chart-title">Average asking price by floor plan</div>
+        <div class="legend" id="trends-legend"></div>
+      </div>
+      <div style="position: relative; width: 100%; height: 320px;">
+        <canvas id="trendsChart" role="img" aria-label="Line chart showing average asking price over time by floor plan">Price trend data loading...</canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="chart-title">Units available per day</div>
+      </div>
+      <div style="position: relative; width: 100%; height: 180px;">
+        <canvas id="availChart" role="img" aria-label="Bar chart showing number of units available each day">Availability data loading...</canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── AVAILABLE NOW ── -->
+  <div class="page" id="page-available">
+    <div class="stats" id="avail-stats"></div>
+    <div class="filter-bar">
+      <label>Sort by</label>
+      <select id="avail-sort" onchange="renderAvailable()">
+        <option value="price-asc">Price ↑</option>
+        <option value="price-desc">Price ↓</option>
+        <option value="unit">Unit #</option>
+        <option value="sqft">Sq ft</option>
+      </select>
+      <label>Beds</label>
+      <select id="avail-beds" onchange="renderAvailable()">
+        <option value="all">Any</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+      </select>
+    </div>
+    <div class="units-grid" id="units-grid"><div class="loading">Loading...</div></div>
+  </div>
+
+  <!-- ── ALL UNITS ── -->
+  <div class="page" id="page-details">
+    <div class="filter-bar">
+      <label>Search</label>
+      <input type="text" id="unit-search" placeholder="Unit # or floor plan..." oninput="renderDetails()" style="width:200px;" />
+      <label>Building</label>
+      <select id="bldg-filter" onchange="renderDetails()">
+        <option value="all">All</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Unit</th><th>Plan</th><th>Building</th><th>Beds</th><th>Baths</th>
+            <th>Sq Ft</th><th>Floor</th><th>Garage</th><th>Fireplace</th><th>Lake View</th>
+            <th>Min Price</th><th>Max Price</th><th>Last Available</th>
+          </tr>
+        </thead>
+        <tbody id="details-tbody"><tr><td colspan="13" class="loading">Loading...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── DEAL FINDER ── -->
+  <div class="page" id="page-deals">
+    <p style="color: var(--muted); font-size: 13px; margin-bottom: 1.5rem;">
+      Units currently available priced below their historical average for that floor plan.
+    </p>
+    <div id="deals-list"><div class="loading">Loading...</div></div>
+  </div>
+
+</main>
+
+<script>
+let priceHistory = [];
+let unitDetails  = [];
+let trendsChart, availChart;
+
+const COLORS = ['#6c8fff','#ff6b9d','#43e8b0','#ffb547','#bf7fff','#ff9469','#4dd9f5','#a8ff78'];
+
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function fmt(n) {
+  return '$' + Math.round(n).toLocaleString();
+}
+
+function today() {
+  return priceHistory.length ? [...new Set(priceHistory.map(r => r.Date))].sort().at(-1) : null;
+}
+
+function todayRows() {
+  const t = today();
+  return t ? priceHistory.filter(r => r.Date === t) : [];
+}
+
+function loadData() {
+  const base = window.DATA_BASE_URL || './';
+  Promise.all([
+    fetch(base + 'price_history.csv').then(r => r.text()),
+    fetch(base + 'unit_details.csv').then(r => r.text())
+  ]).then(([ph, ud]) => {
+    priceHistory = Papa.parse(ph, { header: true, skipEmptyLines: true }).data;
+    unitDetails  = Papa.parse(ud, { header: true, skipEmptyLines: true }).data;
+    init();
+  }).catch(() => {
+    document.querySelector('.loading').textContent = 'Could not load data. Make sure data.csv files are in the same folder.';
+  });
+}
+
+function init() {
+  const t = today();
+  document.getElementById('last-updated').textContent = t ? 'Last updated: ' + t : '';
+
+  // populate floor plan filter
+  const plans = [...new Set(unitDetails.map(u => u['Floor Plan']))].filter(Boolean).sort();
+  const sel = document.getElementById('plan-filter');
+  plans.forEach(p => {
+    const o = document.createElement('option');
+    o.value = o.textContent = p;
+    sel.appendChild(o);
+  });
+
+  // populate building filter
+  const bldgs = [...new Set(unitDetails.map(u => u['Building']))].filter(Boolean).sort();
+  const bsel = document.getElementById('bldg-filter');
+  bldgs.forEach(b => {
+    const o = document.createElement('option');
+    o.value = o.textContent = b;
+    bsel.appendChild(o);
+  });
+
+  renderStats();
+  renderTrends();
+  renderAvailable();
+  renderDetails();
+  renderDeals();
+}
+
+function renderStats() {
+  const t = todayRows();
+  const allPrices = t.map(r => parseFloat(r.Price)).filter(Boolean);
+  const avg = allPrices.length ? allPrices.reduce((a,b) => a+b,0) / allPrices.length : 0;
+  const min = allPrices.length ? Math.min(...allPrices) : 0;
+
+  const days = [...new Set(priceHistory.map(r => r.Date))];
+
+  document.getElementById('stats-row').innerHTML = `
+    <div class="stat"><div class="stat-label">Available today</div><div class="stat-value" style="color:var(--accent1)">${t.length}</div><div class="stat-sub">units on market</div></div>
+    <div class="stat"><div class="stat-label">Avg asking price</div><div class="stat-value">${fmt(avg)}</div><div class="stat-sub">across all plans</div></div>
+    <div class="stat"><div class="stat-label">Lowest today</div><div class="stat-value" style="color:var(--accent3)">${min ? fmt(min) : '—'}</div><div class="stat-sub">starting price</div></div>
+    <div class="stat"><div class="stat-label">Days tracked</div><div class="stat-value" style="color:var(--accent4)">${days.length}</div><div class="stat-sub">since first run</div></div>
+  `;
+}
+
+function renderTrends() {
+  const planFilter = document.getElementById('plan-filter').value;
+  const bedFilter  = document.getElementById('bed-filter').value;
+
+  let filtered = priceHistory.map(r => {
+    const detail = unitDetails.find(u => u['Unit Number'] === r['Unit Number']);
+    return { ...r, ...detail };
+  });
+
+  if (bedFilter !== 'all') filtered = filtered.filter(r => r['Bedrooms'] == bedFilter);
+
+  const dates = [...new Set(filtered.map(r => r.Date))].sort();
+  const plans = planFilter === 'all'
+    ? [...new Set(filtered.map(r => r['Floor Plan']))].filter(Boolean).sort()
+    : [planFilter];
+
+  // Trends chart
+  const datasets = plans.map((plan, i) => {
+    const data = dates.map(d => {
+      const rows = filtered.filter(r => r.Date === d && r['Floor Plan'] === plan);
+      if (!rows.length) return null;
+      const prices = rows.map(r => parseFloat(r.Price)).filter(Boolean);
+      return prices.length ? Math.round(prices.reduce((a,b)=>a+b,0)/prices.length) : null;
+    });
+    return {
+      label: plan,
+      data,
+      borderColor: COLORS[i % COLORS.length],
+      backgroundColor: COLORS[i % COLORS.length] + '18',
+      borderWidth: 2,
+      pointRadius: dates.length > 30 ? 0 : 3,
+      tension: 0.3,
+      spanGaps: true,
+      fill: false,
+      borderDash: i > 4 ? [4,3] : []
+    };
+  });
+
+  // Legend
+  document.getElementById('trends-legend').innerHTML = plans.map((p, i) =>
+    `<span class="legend-item"><span class="legend-dot" style="background:${COLORS[i%COLORS.length]}"></span>${p}</span>`
+  ).join('');
+
+  if (trendsChart) trendsChart.destroy();
+  trendsChart = new Chart(document.getElementById('trendsChart'), {
+    type: 'line',
+    data: { labels: dates, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#6b7280', maxTicksLimit: 10, font: { family: 'DM Mono', size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+        y: { ticks: { color: '#6b7280', callback: v => '$' + v.toLocaleString(), font: { family: 'DM Mono', size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' } }
+      }
+    }
+  });
+
+  // Availability bar chart
+  const availCounts = dates.map(d => priceHistory.filter(r => r.Date === d).length);
+  if (availChart) availChart.destroy();
+  availChart = new Chart(document.getElementById('availChart'), {
+    type: 'bar',
+    data: {
+      labels: dates,
+      datasets: [{ label: 'Units available', data: availCounts, backgroundColor: '#6c8fff30', borderColor: '#6c8fff', borderWidth: 1, borderRadius: 4 }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#6b7280', maxTicksLimit: 10, font: { family: 'DM Mono', size: 10 } }, grid: { display: false } },
+        y: { ticks: { color: '#6b7280', stepSize: 1, font: { family: 'DM Mono', size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' } }
+      }
+    }
+  });
+}
+
+function renderAvailable() {
+  const t = today();
+  if (!t) return;
+
+  let units = todayRows().map(r => {
+    const d = unitDetails.find(u => u['Unit Number'] === r['Unit Number']) || {};
+    return { ...r, ...d, price: parseFloat(r.Price) };
+  });
+
+  const bedF = document.getElementById('avail-beds').value;
+  if (bedF !== 'all') units = units.filter(u => u['Bedrooms'] == bedF);
+
+  const sort = document.getElementById('avail-sort').value;
+  units.sort((a,b) => {
+    if (sort === 'price-asc')  return a.price - b.price;
+    if (sort === 'price-desc') return b.price - a.price;
+    if (sort === 'sqft')       return parseFloat(b['SqFt']) - parseFloat(a['SqFt']);
+    return a['Unit Number'].localeCompare(b['Unit Number']);
+  });
+
+  const avgByPlan = {};
+  [...new Set(priceHistory.map(r => r['Floor Plan'] || (unitDetails.find(u=>u['Unit Number']===r['Unit Number'])||{})['Floor Plan']))].forEach(plan => {
+    const prices = priceHistory.filter(r => {
+      const d = unitDetails.find(u => u['Unit Number'] === r['Unit Number']);
+      return d && d['Floor Plan'] === plan;
+    }).map(r => parseFloat(r.Price)).filter(Boolean);
+    if (prices.length) avgByPlan[plan] = prices.reduce((a,b)=>a+b,0)/prices.length;
+  });
+
+  document.getElementById('avail-stats').innerHTML = `
+    <div class="stat"><div class="stat-label">Showing</div><div class="stat-value" style="color:var(--accent1)">${units.length}</div><div class="stat-sub">units today</div></div>
+    <div class="stat"><div class="stat-label">Lowest price</div><div class="stat-value" style="color:var(--accent3)">${units.length ? fmt(Math.min(...units.map(u=>u.price))) : '—'}</div></div>
+    <div class="stat"><div class="stat-label">Highest price</div><div class="stat-value" style="color:var(--accent2)">${units.length ? fmt(Math.max(...units.map(u=>u.price))) : '—'}</div></div>
+  `;
+
+  document.getElementById('units-grid').innerHTML = units.length ? units.map(u => {
+    const planAvg = avgByPlan[u['Floor Plan']];
+    const isBelowAvg = planAvg && u.price < planAvg * 0.97;
+    const chips = [
+      u['Bedrooms'] ? `${u['Bedrooms']} bed` : null,
+      u['Bathrooms'] ? `${u['Bathrooms']} bath` : null,
+      u['SqFt'] ? `${u['SqFt']} sqft` : null,
+      u['Floor'] ? `floor ${u['Floor']}` : null,
+    ].filter(Boolean);
+    const highlights = [
+      u['Garage'] > 0 ? `${u['Garage']}-car garage` : null,
+      u['Fireplace'] === 'True' || u['Fireplace'] === true ? 'fireplace' : null,
+      u['Lake View'] === 'True' || u['Lake View'] === true ? 'lake view' : null,
+    ].filter(Boolean);
+
+    return `
+      <div class="unit-card">
+        <div class="unit-card-top">
+          <div class="unit-number">${u['Unit Number']}</div>
+          <div class="unit-price">${fmt(u.price)}</div>
+        </div>
+        <div class="unit-plan">${u['Floor Plan'] || '—'} · Bldg ${u['Building'] || '?'}</div>
+        <div class="unit-chips">
+          ${chips.map(c => `<span class="chip">${c}</span>`).join('')}
+          ${highlights.map(c => `<span class="chip highlight">${c}</span>`).join('')}
+          ${isBelowAvg ? `<span class="chip warn">below avg</span>` : ''}
+        </div>
+      </div>`;
+  }).join('') : '<div class="loading">No units match filters.</div>';
+}
+
+function renderDetails() {
+  const search = document.getElementById('unit-search').value.toLowerCase();
+  const bldg   = document.getElementById('bldg-filter').value;
+
+  let units = unitDetails.filter(u => {
+    if (bldg !== 'all' && u['Building'] !== bldg) return false;
+    if (search && !u['Unit Number'].includes(search) && !(u['Floor Plan']||'').toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  units.sort((a,b) => a['Unit Number'].localeCompare(b['Unit Number']));
+
+  const bool = v => (v === 'True' || v === true)
+    ? `<span class="badge badge-yes">yes</span>`
+    : `<span class="badge badge-no">no</span>`;
+
+  document.getElementById('details-tbody').innerHTML = units.length ? units.map(u => `
+    <tr>
+      <td class="td-mono">${u['Unit Number']}</td>
+      <td>${u['Floor Plan'] || '—'}</td>
+      <td class="td-mono">${u['Building'] || '—'}</td>
+      <td>${u['Bedrooms'] || '—'}</td>
+      <td>${u['Bathrooms'] || '—'}</td>
+      <td>${u['SqFt'] || '—'}</td>
+      <td>${u['Floor'] || '—'}</td>
+      <td>${u['Garage'] || '0'}</td>
+      <td>${bool(u['Fireplace'])}</td>
+      <td>${bool(u['Lake View'])}</td>
+      <td class="td-mono">${u['Min Price'] ? fmt(u['Min Price']) : '—'}</td>
+      <td class="td-mono">${u['Max Price'] ? fmt(u['Max Price']) : '—'}</td>
+      <td class="td-muted">${u['Last Available'] || '—'}</td>
+    </tr>`).join('') : `<tr><td colspan="13" class="loading">No units found.</td></tr>`;
+}
+
+function renderDeals() {
+  const t = today();
+  if (!t) return;
+
+  const planAvgs = {};
+  const plans = [...new Set(unitDetails.map(u => u['Floor Plan']))].filter(Boolean);
+  plans.forEach(plan => {
+    const prices = priceHistory.filter(r => {
+      const d = unitDetails.find(u => u['Unit Number'] === r['Unit Number']);
+      return d && d['Floor Plan'] === plan;
+    }).map(r => parseFloat(r.Price)).filter(Boolean);
+    if (prices.length) planAvgs[plan] = prices.reduce((a,b)=>a+b,0)/prices.length;
+  });
+
+  const deals = todayRows().map(r => {
+    const d = unitDetails.find(u => u['Unit Number'] === r['Unit Number']) || {};
+    const price = parseFloat(r.Price);
+    const avg = planAvgs[d['Floor Plan']];
+    const savings = avg ? avg - price : 0;
+    return { ...r, ...d, price, avg, savings };
+  }).filter(u => u.savings > 0).sort((a,b) => b.savings - a.savings);
+
+  document.getElementById('deals-list').innerHTML = deals.length ? deals.map(u => `
+    <div class="deal-card">
+      <div class="deal-unit">${u['Unit Number']}</div>
+      <div class="deal-info">
+        <div class="deal-plan">${u['Floor Plan'] || '—'} · Bldg ${u['Building'] || '?'} · Floor ${u['Floor'] || '?'}</div>
+        <div class="deal-price">${fmt(u.price)}</div>
+      </div>
+      <div class="deal-savings">-${fmt(u.savings)} vs avg</div>
+    </div>`).join('') : '<div class="loading">No deals found today — all units are at or above their historical average.</div>';
+}
+
+loadData();
+</script>
+</body>
+</html>

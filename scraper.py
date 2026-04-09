@@ -1,4 +1,5 @@
 import requests
+import shutil
 from bs4 import BeautifulSoup
 import pandas as pd
 import traceback
@@ -200,6 +201,13 @@ try:
     details_df = details_df.sort_values('Unit Number')
     details_df.to_csv(details_path, index=False)
     print("Finished updating max/mins\n")
+
+    # ── Update Webpage ──────────────────────────────────────────────────────
+    print("Publishing data")
+    os.makedirs('docs', exist_ok=True)
+    shutil.copy('data/price_history.csv', 'docs/price_history.csv')
+    shutil.copy('data/unit_details.csv',  'docs/unit_details.csv')
+    print("✅ Published data to docs\n")
     
     # ── Summary ──────────────────────────────────────────────────────
     print("------------------------")
@@ -217,7 +225,7 @@ try:
     else:
         print("No new price highs or lows today")
     print("\n")
-    
+
 except Exception as e:
     print(f"❌ Error: {e}")
     traceback.print_exc()
