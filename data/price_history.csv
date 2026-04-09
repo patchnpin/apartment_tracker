@@ -1,1 +1,9 @@
-Date,Unit Number,Price
+Date,Unit Number,Price,Building,Floor Plan,SqFt,Bedrooms,Bathrooms,Floor,Garage,Fireplace,Lake View
+2026-04-09,0725,1608,07,A1,759,1,1,2.0,1.0,False,False
+2026-04-09,0731,1569,07,A3,822,1,1,3.0,0.0,False,False
+2026-04-09,0821,2003,08,A6,938,1,1,2.0,1.0,False,False
+2026-04-09,0434,2126,04,B1,1132,2,2,3.0,0.0,False,False
+2026-04-09,1810,2468,18,B3,1299,2,2,1.0,1.0,False,False
+2026-04-09,0624,2529,06,C1,1524,3,2,2.0,1.0,True,False
+2026-04-09,1426,2675,14,C1,1524,3,2,2.0,1.0,True,False
+2026-04-09,1511,2944,15,C2,1587,3,2.5,1.0,2.0,True,False
