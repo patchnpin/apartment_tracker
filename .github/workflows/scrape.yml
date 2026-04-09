@@ -2,7 +2,7 @@ name: Daily Apartment Scraper
 
 on:
   schedule:
-    - cron: '15 19 * * *'  # 0 14 is 9am Central (UTC-5)
+    - cron: '0 14 * * *'  # 9am Central (UTC-5)
   workflow_dispatch:        # lets you trigger it manually from GitHub
 
 env:
