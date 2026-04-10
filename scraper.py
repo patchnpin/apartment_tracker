@@ -192,9 +192,9 @@ try:
                 'Price':       low_row['Price']
             })
 
-        details_df.at[idx, 'Price Max']      = high_row['Price']
+        details_df.at[idx, 'Price Max']      = str(high_row['Price'])
         details_df.at[idx, 'Price Max Date'] = high_row['Date'].strftime('%Y-%m-%d')
-        details_df.at[idx, 'Price Min']      = low_row['Price']
+        details_df.at[idx, 'Price Min']      = str(low_row['Price'])
         details_df.at[idx, 'Price Min Date'] = low_row['Date'].strftime('%Y-%m-%d')
         details_df.at[idx, 'Last Available'] = unit_prices['Date'].max().strftime('%Y-%m-%d')
     
