@@ -138,7 +138,7 @@ try:
             for col in ['Floor Plan', 'Building', 'SqFt', 'Bedrooms',
                         'Bathrooms', 'Floor', 'Garage', 'Fireplace', 
                         'Lake View']:
-                details_df.loc[mask, col] = row[col]
+                details_df.loc[mask, col] = str(row[col])
         else:
             details_df = pd.concat([details_df, pd.DataFrame([{
                 'Unit Number':    row['Unit Number'],
