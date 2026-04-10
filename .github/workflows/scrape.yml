@@ -22,10 +22,23 @@ jobs:
 
       - run: python scraper.py
 
+      - name: Show file contents after scraper
+        run: |
+          echo "=== data/ folder ==="
+          ls -la data/
+          echo "=== docs/ folder ==="
+          ls -la docs/
+          echo "=== price_history row count ==="
+          wc -l data/price_history.csv
+          echo "=== docs price_history row count ==="
+          wc -l docs/price_history.csv
+
       - name: Commit updated CSVs
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
+          git status
           git add data/ docs/
+          git status
           git commit -m "Daily update $(date +%Y-%m-%d)" || echo "No changes today"
           git push
