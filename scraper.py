@@ -22,6 +22,8 @@ try:
         fireplace = False
         building  = str(unit_num)[:2]
         lake_view = (building == '07' or building == '11') and (int(unit_num) % 2 == 0)
+        tour_available = bool(soup.find('i', class_='spaces__icon-virtual-tour'))
+        unit_url = url
 
         for li in amenities_section.find_all('li'):
             text = li.get_text(strip=True).lower()
@@ -43,7 +45,9 @@ try:
             'Garage':    garage,
             'Fireplace': fireplace,
             'Building':  building,
-            'Lake View': lake_view
+            'Lake View': lake_view,
+            'Tour Available': tour_available,
+            'Unit URL':       unit_url
         }
 
     # ── Scrape ──────────────────────────────────────────────────────
@@ -62,20 +66,23 @@ try:
     for unit in units:
         spaces_id = unit.get('data-spaces-id')
         unit_num  = unit.get('data-spaces-unit')
+        unit_tour = unit.get('data-spaces-tooltip="360° Tour"')
         details   = get_more_details(unit_num, spaces_id, url)
         rows.append({
-            'Date':        str(date.today()),
-            'Unit Number': str(unit_num).zfill(4),
-            'Price':       unit.get('data-spaces-sort-price'),
-            'Building':    details.get('Building'),
-            'Floor Plan':  unit.get('data-spaces-sort-plan-name'),
-            'SqFt':        unit.get('data-spaces-sort-area'),
-            'Bedrooms':    unit.get('data-spaces-sort-bed'),
-            'Bathrooms':   unit.get('data-spaces-sort-bath'),
-            'Floor':       details.get('Floor'),
-            'Garage':      details.get('Garage'),
-            'Fireplace':   details.get('Fireplace'),
-            'Lake View':   details.get('Lake View')
+            'Date':           str(date.today()),
+            'Unit Number':    str(unit_num).zfill(4),
+            'Price':          unit.get('data-spaces-sort-price'),
+            'Building':       details.get('Building'),
+            'Floor Plan':     unit.get('data-spaces-sort-plan-name'),
+            'SqFt':           unit.get('data-spaces-sort-area'),
+            'Bedrooms':       unit.get('data-spaces-sort-bed'),
+            'Bathrooms':      unit.get('data-spaces-sort-bath'),
+            'Floor':          details.get('Floor'),
+            'Garage':         details.get('Garage'),
+            'Fireplace':      details.get('Fireplace'),
+            'Lake View':      details.get('Lake View'),
+            'Tour Available': details.get('Tour Available'),
+            'Unit URL':       details.get('Unit URL')
         })
     print(f"Fetched {len(rows)} units\n")
 
@@ -137,7 +144,7 @@ try:
         if mask.any():
             for col in ['Floor Plan', 'Building', 'SqFt', 'Bedrooms',
                         'Bathrooms', 'Floor', 'Garage', 'Fireplace', 
-                        'Lake View']:
+                        'Lake View', 'Tour Available', 'Unit URL']:
                 details_df.loc[mask, col] = str(row[col])
         else:
             details_df = pd.concat([details_df, pd.DataFrame([{
@@ -151,6 +158,9 @@ try:
                 'Garage':         row['Garage'],
                 'Fireplace':      row['Fireplace'],
                 'Lake View':      row['Lake View'],
+                'Tour Available': row['Tour Available'],
+                'Tour URL':       None,
+                'Unit URL':       row['Unit URL'],
                 'Price Max':      None,
                 'Price Max Date': None,
                 'Price Min':      None,

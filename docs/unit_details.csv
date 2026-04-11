@@ -1,10 +1,10 @@
-Unit Number,Floor Plan,Building,SqFt,Bedrooms,Bathrooms,Floor,Garage,Fireplace,Lake View,Min Price,Min Price Date,Max Price,Max Price Date,Last Available,Price Max,Price Max Date,Price Min,Price Min Date
-0434,B1,04,1132,2,2,3,0,False,False,,,,,2026-04-11,2128,2026-04-11,2126,2026-04-10
-0624,C1,06,1524,3,2,2,1,True,False,,,,,2026-04-11,2529,2026-04-10,2529,2026-04-10
-0725,A1,07,759,1,1,2,1,False,False,,,,,2026-04-11,1620,2026-04-11,1608,2026-04-10
-0731,A3,07,822,1,1,3,0,False,False,,,,,2026-04-11,1581,2026-04-11,1569,2026-04-10
-0821,A6,08,938,1,1,2,1,False,False,,,,,2026-04-11,2015,2026-04-11,2003,2026-04-10
-1315,C2,13,1587,3,2.5,1,2,True,False,,,,,2026-04-11,3026,2026-04-11,3026,2026-04-11
-1426,C1,14,1524,3,2,2,1,True,False,,,,,2026-04-11,2675,2026-04-10,2666,2026-04-11
-1511,C2,15,1587,3,2.5,1,2,True,False,,,,,2026-04-11,2949,2026-04-11,2944,2026-04-10
-1810,B3,18,1299,2,2,1,1,False,False,,,,,2026-04-11,2483,2026-04-11,2468,2026-04-10
+Unit Number,Floor Plan,Building,SqFt,Bedrooms,Bathrooms,Floor,Garage,Fireplace,Lake View,Tour Available,Tour URL,Last Available,Price Max,Price Max Date,Price Min,Price Min Date,Unit URL
+0434,B1,04,1132,2,2,3,0,False,False,True,https://realync.com/share/video/698648bbec3966d6304d0fff?recipientId=69864bb5016fd2a3ed92b9e5,2026-04-11,2128,2026-04-11,2126,2026-04-10,https://www.windsorcommunities.com/properties/legacy-at-windsor/floorplans/?spaces_tab=unit-detail&detail=5361264
+0624,C1,06,1524,3,2,2,1,True,False,True,https://realync.com/share/video/62a0e5117ed187001491a484?recipientId=65deab8dfcb9753acda886bf,2026-04-11,2529,2026-04-10,2529,2026-04-10,https://www.windsorcommunities.com/properties/legacy-at-windsor/floorplans/?spaces_tab=unit-detail&detail=5361297
+0725,A1,07,759,1,1,2,1,False,False,True,https://realync.com/share/video/65a9919b7877a09c4bff2284?recipientId=65deab8dbaa2f246093b9dbd,2026-04-11,1620,2026-04-11,1608,2026-04-10,https://www.windsorcommunities.com/properties/legacy-at-windsor/floorplans/?spaces_tab=unit-detail&detail=5361311
+0731,A3,07,822,1,1,3,0,False,False,False,,2026-04-11,1581,2026-04-11,1569,2026-04-10,https://www.windsorcommunities.com/properties/legacy-at-windsor/floorplans/?spaces_tab=unit-detail&detail=5361315
+0821,A6,08,938,1,1,2,1,False,False,True,https://realync.com/share/video/6739090eada486c1908f9844?recipientId=67390a34e2b5f95c53da8f70,2026-04-11,2015,2026-04-11,2003,2026-04-10,https://www.windsorcommunities.com/properties/legacy-at-windsor/floorplans/?spaces_tab=unit-detail&detail=5361325
+1315,C2,13,1587,3,2.5,1,2,True,False,False,,2026-04-11,3026,2026-04-11,3026,2026-04-11,https://www.windsorcommunities.com/properties/legacy-at-windsor/floorplans/?spaces_tab=unit-detail&detail=5361394
+1426,C1,14,1524,3,2,2,1,True,False,False,,2026-04-11,2675,2026-04-10,2666,2026-04-11,https://www.windsorcommunities.com/properties/legacy-at-windsor/floorplans/?spaces_tab=unit-detail&detail=5361410
+1511,C2,15,1587,3,2.5,1,2,True,False,False,,2026-04-11,2949,2026-04-11,2944,2026-04-10,https://www.windsorcommunities.com/properties/legacy-at-windsor/floorplans/?spaces_tab=unit-detail&detail=5361413
+1810,B3,18,1299,2,2,1,1,False,False,False,,2026-04-11,2483,2026-04-11,2468,2026-04-10,https://www.windsorcommunities.com/properties/legacy-at-windsor/floorplans/?spaces_tab=unit-detail&detail=5361449

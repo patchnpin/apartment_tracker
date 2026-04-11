@@ -331,7 +331,9 @@
 
 <header>
   <div>
-    <h1>Legacy at <span>Windsor</span></h1>
+    <a href="https://www.windsorcommunities.com/properties/legacy-at-windsor/floorplans/" target="_blank" style="color: inherit; text-decoration: none;">
+      <h1>Legacy at <span>Windsor</span></h1>
+    </a>
     <div id="last-updated">loading data...</div>
   </div>
 </header>
@@ -404,6 +406,7 @@
 
   <!-- ── ALL UNITS ── -->
   <div class="page" id="page-details">
+    <div id="tour-banner"></div> 
     <div class="filter-bar">
       <label>Search</label>
       <input type="text" id="unit-search" placeholder="Unit # or floor plan..." oninput="renderDetails()" style="width:200px;" />
@@ -418,7 +421,7 @@
           <tr>
             <th>Unit</th><th>Plan</th><th>Building</th><th>Beds</th><th>Baths</th>
             <th>Sq Ft</th><th>Floor</th><th>Garage</th><th>Fireplace</th><th>Lake View</th>
-            <th>Min Price</th><th>Max Price</th><th>Last Available</th>
+            <th>Min Price</th><th>Max Price</th><th>Last Available</th><th>3D Tour</th>
           </tr>
         </thead>
         <tbody id="details-tbody"><tr><td colspan="13" class="loading">Loading...</td></tr></tbody>
@@ -651,8 +654,13 @@ function renderAvailable() {
       u['Lake View'] === 'True' || u['Lake View'] === true ? 'lake view' : null,
     ].filter(Boolean);
 
+    const url = (u['Unit URL'] || '').trim();
+
     return `
-      <div class="unit-card">
+      <a href="${url.startsWith('http') ? url : 'https://' + url}" 
+     target="_blank" 
+     style="text-decoration:none; color:inherit;">
+       <div class="unit-card">
         <div class="unit-card-top">
           <div class="unit-number">${u['Unit Number']}</div>
           <div class="unit-price">${fmt(u.price)}</div>
@@ -663,13 +671,33 @@ function renderAvailable() {
           ${highlights.map(c => `<span class="chip highlight">${c}</span>`).join('')}
           ${isBelowAvg ? `<span class="chip warn">below avg</span>` : ''}
         </div>
-      </div>`;
+      </div></a>`;
   }).join('') : '<div class="loading">No units match filters.</div>';
 }
 
 function renderDetails() {
   const search = document.getElementById('unit-search').value.toLowerCase();
   const bldg   = document.getElementById('bldg-filter').value;
+
+  // ── Tour alert banner ─────────────────────────────────────────
+  const missingLinks = unitDetails.filter(u =>
+      (u['Tour Available'] === 'True' || u['Tour Available'] === true) &&
+      (!u['Tour URL'] || u['Tour URL'].trim() === '')
+  );
+
+  const banner = document.getElementById('tour-banner');
+  if (missingLinks.length) {
+      banner.innerHTML = `
+          <div style="background:rgba(108,143,255,0.1);border:1px solid rgba(108,143,255,0.3);
+                      border-radius:10px;padding:0.75rem 1.1rem;margin-bottom:1.25rem;
+                      font-size:13px;color:var(--accent1);">
+              <strong>3D tours available</strong> — ${missingLinks.length} unit${missingLinks.length > 1 ? 's' : ''} 
+              ${missingLinks.length > 1 ? 'have' : 'has'} a tour but no link saved yet: 
+              <span style="font-family:var(--font-mono)">${missingLinks.map(u => u['Unit Number']).join(', ')}</span>
+          </div>`;
+  } else {
+      banner.innerHTML = '';
+  }
 
   let units = unitDetails.filter(u => {
     if (bldg !== 'all' && u['Building'] !== bldg) return false;
@@ -698,7 +726,9 @@ function renderDetails() {
       <td class="td-mono">${u['Min Price'] ? fmt(u['Min Price']) : '—'}</td>
       <td class="td-mono">${u['Max Price'] ? fmt(u['Max Price']) : '—'}</td>
       <td class="td-muted">${u['Last Available'] || '—'}</td>
-    </tr>`).join('') : `<tr><td colspan="13" class="loading">No units found.</td></tr>`;
+      <td class="td-muted">${u['Tour URL'] && u['Tour URL'].trim() !== ''  ? `<a href="${u['Tour URL'].startsWith('http') ? u['Tour URL'] : 'https://' + u['Tour URL']}"  target="_blank"  class="badge badge-yes">Tour</a>` : ''}
+</td>
+    </tr>`).join('') : `<tr><td colspan="14" class="loading">No units found.</td></tr>`;
 }
 
 function renderDeals() {
