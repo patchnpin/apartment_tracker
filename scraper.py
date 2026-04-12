@@ -114,7 +114,10 @@ try:
             'Price Max Date': str,
             'Price Min':      str,
             'Price Min Date': str,
-            'Last Available': str
+            'Last Available': str,
+            'Tour Available': str,
+            'Unit URL':       str,
+            'Tour URL':       str,
         })
     else:
         details_df = pd.DataFrame(columns=[
