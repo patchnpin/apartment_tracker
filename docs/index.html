@@ -689,12 +689,18 @@ function renderDetails() {
   if (missingLinks.length) {
       banner.innerHTML = `
           <div style="background:rgba(108,143,255,0.1);border:1px solid rgba(108,143,255,0.3);
-                      border-radius:10px;padding:0.75rem 1.1rem;margin-bottom:1.25rem;
-                      font-size:13px;color:var(--accent1);">
-              <strong>3D tours available</strong> — ${missingLinks.length} unit${missingLinks.length > 1 ? 's' : ''} 
-              ${missingLinks.length > 1 ? 'have' : 'has'} a tour but no link saved yet: 
-              <span style="font-family:var(--font-mono)">${missingLinks.map(u => u['Unit Number']).join(', ')}</span>
-          </div>`;
+            border-radius:10px;padding:0.75rem 1.1rem;margin-bottom:1.25rem;
+            font-size:13px;color:var(--accent1);">
+    <strong>3D tours available</strong> — ${missingLinks.length} unit${missingLinks.length > 1 ? 's' : ''} 
+    ${missingLinks.length > 1 ? 'have' : 'has'} a tour but no link saved yet: 
+    <span style="font-family:var(--font-mono)">
+        ${missingLinks.map(u => 
+            u['Unit URL'] 
+                ? `<a href="${u['Unit URL']}" target="_blank" style="color:var(--accent1);text-decoration:underline;">${u['Unit Number']}</a>`
+                : u['Unit Number']
+        ).join(', ')}
+    </span>
+</div>`;
   } else {
       banner.innerHTML = '';
   }
