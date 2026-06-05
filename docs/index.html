@@ -729,8 +729,8 @@ function renderDetails() {
       <td>${u['Garage'] || '0'}</td>
       <td>${bool(u['Fireplace'])}</td>
       <td>${bool(u['Lake View'])}</td>
-      <td class="td-mono">${u['Min Price'] ? fmt(u['Min Price']) : '—'}</td>
-      <td class="td-mono">${u['Max Price'] ? fmt(u['Max Price']) : '—'}</td>
+      <td class="td-mono">${u['Price Min'] ? fmt(u['Price Min']) : '—'}</td>
+      <td class="td-mono">${u['Price Max'] ? fmt(u['Price Max']) : '—'}</td>
       <td class="td-muted">${u['Last Available'] || '—'}</td>
       <td class="td-muted">${u['Tour URL'] && u['Tour URL'].trim() !== ''  ? `<a href="${u['Tour URL'].startsWith('http') ? u['Tour URL'] : 'https://' + u['Tour URL']}"  target="_blank"  class="badge badge-yes">Tour</a>` : ''}
 </td>
